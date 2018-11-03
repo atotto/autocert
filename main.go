@@ -59,12 +59,25 @@ func main() {
 	}
 	rp := &httputil.ReverseProxy{Director: director}
 
+	tlsConfig := certManager.TLSConfig()
+	tlsConfig.ServerName = *hostname
+	tlsConfig.PreferServerCipherSuites = true
+	tlsConfig.MinVersion = tls.VersionTLS12
+	tlsConfig.CipherSuites = []uint16{
+		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+		tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+		tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+		tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+		tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+		tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
+		tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
+		tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
+	}
+
 	server := &http.Server{
-		Addr: fmt.Sprintf(":%d", *httpsPort),
-		TLSConfig: &tls.Config{
-			GetCertificate: certManager.GetCertificate,
-		},
-		Handler: rp,
+		Addr:      fmt.Sprintf("0.0.0.0:%d", *httpsPort),
+		TLSConfig: tlsConfig,
+		Handler:   rp,
 	}
 
 	go http.ListenAndServe(fmt.Sprintf(":%d", *httpPort), certManager.HTTPHandler(nil))

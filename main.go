@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -46,7 +47,9 @@ func main() {
 		if req.Body != nil {
 			buffer, err = ioutil.ReadAll(req.Body)
 			if err != nil {
-				log.Fatal(err.Error())
+				if err != io.EOF {
+					log.Fatal(err.Error())
+				}
 			}
 		}
 		req2, err := http.NewRequest(req.Method, url.String(), bytes.NewBuffer(buffer))

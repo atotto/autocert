@@ -48,7 +48,8 @@ func main() {
 			buffer, err = ioutil.ReadAll(req.Body)
 			if err != nil {
 				if err != io.EOF {
-					log.Fatal(err.Error())
+					log.Print(err.Error())
+					return
 				}
 			}
 		}

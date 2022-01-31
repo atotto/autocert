@@ -1,13 +1,12 @@
 FROM golang:alpine as builder
-WORKDIR /go/src/github.com/atotto/autocert
-RUN apk add --no-cache git
-RUN go get -d golang.org/x/crypto/acme/autocert 
-COPY main.go .
+WORKDIR /workspace
+ADD . /workspace
+RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-w -s' -a -installsuffix cgo -o app .
 
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates
-COPY --from=builder /go/src/github.com/atotto/autocert/app /
+COPY --from=builder /workspace/app /
 EXPOSE 443
 EXPOSE 80
 ENTRYPOINT ["/app"]
